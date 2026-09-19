@@ -3,30 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Star Runner | 横スクロールアクション</title>
+  <title>STAR RUNNER | RETRO ACTION</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="game-shell">
     <header class="game-header">
       <div>
-        <p class="eyebrow">MINI ADVENTURE</p>
+        <p class="eyebrow">★ PLAYER ONE ★</p>
         <h1>STAR RUNNER</h1>
       </div>
-      <div class="instructions">← → / A D で移動　・　Space でジャンプ</div>
+      <div class="instructions">← → / A D MOVE　・　SPACE JUMP</div>
     </header>
 
     <section class="game-card" aria-label="Star Runner game">
       <div class="hud">
-        <span class="score-display">★ <strong id="score">0</strong></span>
-        <span>❤️ <strong id="lives">3</strong></span>
+        <span class="stage-display">STAGE 1-1</span>
+        <span class="score-display">SCORE <strong id="score">0</strong></span>
+        <span class="lives-display">LIFE <strong id="lives">3</strong></span>
         <span class="hud-message" id="message">ゴールを目指そう！</span>
       </div>
       <canvas id="gameCanvas" width="960" height="540">
         お使いのブラウザはCanvasに対応していません。
       </canvas>
       <div class="game-overlay hidden" id="overlay">
-        <h2 id="overlayTitle">ゲームオーバー</h2>
+        <h2 id="overlayTitle">GAME OVER</h2>
         <p id="overlayText">もう一度、星を集めよう。</p>
         <button id="restartButton">もう一度遊ぶ</button>
       </div>

@@ -23,6 +23,7 @@ let platforms;
 let coins;
 let enemies;
 let gameTime = 0;
+let particles;
 
 const levelPlatforms = [
   [0, 470, 700, 70], [820, 400, 260, 30], [1190, 470, 500, 70],
@@ -32,7 +33,7 @@ const levelPlatforms = [
 ];
 
 function resetGame() {
-  score = 0; lives = 3; cameraX = 0; gameTime = 0; state = "playing";
+  score = 0; lives = 3; cameraX = 0; gameTime = 0; state = "playing"; particles = [];
   player = { x: 90, y: 380, width: 30, height: 42, vx: 0, vy: 0, grounded: false };
   platforms = levelPlatforms.map(([x, y, width, height]) => ({ x, y, width, height }));
   coins = [[350, 420], [590, 300], [930, 350], [1330, 420], [1530, 290], [1900, 340],
@@ -77,7 +78,7 @@ function update(delta) {
   player.x = Math.max(0, Math.min(WORLD_WIDTH - player.width, player.x));
   for (const coin of coins) {
     if (!coin.collected && rectsOverlap(player, { x: coin.x - coin.size, y: coin.y - coin.size, width: coin.size * 2, height: coin.size * 2 })) {
-      coin.collected = true; score++; updateHud(`${score}個の星をゲット！`);
+      coin.collected = true; score++; burst(coin.x, coin.y, "#ffd447", 8); updateHud(`${score}個目のコイン！`);
     }
   }
   for (const enemy of enemies) {
@@ -85,11 +86,12 @@ function update(delta) {
     if (Math.abs(enemy.x - enemy.startX) > 55) enemy.vx *= -1;
     if (rectsOverlap(player, enemy)) {
       if (player.vy > 0 && player.y + player.height - enemy.y < 18) {
-        enemy.x = -100; player.vy = -9; score += 2; updateHud("敵を踏んだ！");
+        enemy.x = -100; player.vy = -9; score += 2; burst(enemy.x, enemy.y, "#d94b6a", 14); updateHud("敵を踏んだ！");
       } else loseLife();
     }
   }
   if (player.y > HEIGHT + 100) loseLife();
+  updateParticles(delta);
   cameraX += (player.x - cameraX - WIDTH * 0.35) * 0.08;
   cameraX = Math.max(0, Math.min(WORLD_WIDTH - WIDTH, cameraX));
   if (player.x > 3480) finishGame();
@@ -107,94 +109,117 @@ function loseLife() {
 
 function finishGame() {
   state = "won";
-  showOverlay("STAGE CLEAR!", `集めた星：${score}　おめでとう！`);
+  burst(player.x, player.y, "#62c370", 24);
+  showOverlay("STAGE CLEAR!", `スコア：${score}　おめでとう！`);
 }
 
 function showOverlay(title, text) {
   overlayTitle.textContent = title; overlayText.textContent = text; overlay.classList.remove("hidden");
 }
 
+function burst(x, y, color, amount) {
+  for (let i = 0; i < amount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 3;
+    particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+      life: 18 + Math.random() * 16, color });
+  }
+}
+
+function updateParticles(delta) {
+  for (const particle of particles) {
+    particle.x += particle.vx * delta;
+    particle.y += particle.vy * delta;
+    particle.vy += 0.1 * delta;
+    particle.life -= delta;
+  }
+  particles = particles.filter((particle) => particle.life > 0);
+}
+
 function draw() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
-  const sky = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-  sky.addColorStop(0, "#080b24"); sky.addColorStop(0.5, "#172259"); sky.addColorStop(1, "#5c286e");
-  ctx.fillStyle = sky; ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  ctx.fillStyle = "#273469"; ctx.fillRect(0, 0, WIDTH, 360);
+  ctx.fillStyle = "#10152b"; ctx.fillRect(0, 360, WIDTH, HEIGHT - 360);
   ctx.save(); ctx.translate(-cameraX, 0);
   drawBackground();
   for (const platform of platforms) {
-    ctx.shadowColor = "#42f5d455"; ctx.shadowBlur = 14;
-    const platformGradient = ctx.createLinearGradient(0, platform.y, 0, platform.y + platform.height);
-    platformGradient.addColorStop(0, "#243f77"); platformGradient.addColorStop(1, "#111831");
-    ctx.fillStyle = platformGradient; ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "#5af5cf"; ctx.fillRect(platform.x, platform.y, platform.width, 5);
-    ctx.fillStyle = "#b1fff0"; ctx.fillRect(platform.x + 8, platform.y + 2, Math.min(34, platform.width - 16), 2);
+    ctx.fillStyle = "#8b4b35"; ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    ctx.fillStyle = "#62c370"; ctx.fillRect(platform.x, platform.y, platform.width, 7);
+    ctx.fillStyle = "#a86443";
+    for (let brickX = platform.x + 8; brickX < platform.x + platform.width - 5; brickX += 32) {
+      ctx.fillRect(brickX, platform.y + 14, 22, 5);
+    }
   }
   for (const coin of coins) if (!coin.collected) {
-    const pulse = Math.sin(gameTime * 0.08 + coin.x) * 2;
-    ctx.shadowColor = "#ffe16b"; ctx.shadowBlur = 18;
-    ctx.fillStyle = "#ffe16b"; ctx.beginPath(); ctx.arc(coin.x, coin.y, coin.size + pulse * 0.25, 0, Math.PI * 2); ctx.fill();
-    ctx.shadowBlur = 0; ctx.fillStyle = "#fff8c7"; ctx.fillRect(coin.x - 2, coin.y - 8, 4, 8);
+    const frame = Math.floor(gameTime / 8) % 2;
+    ctx.fillStyle = "#ffd447"; ctx.fillRect(coin.x - 10, coin.y - 10, 20, 20);
+    ctx.fillStyle = "#fff4c2"; ctx.fillRect(coin.x - 4, coin.y - 7, 5, 5);
+    if (frame) ctx.fillStyle = "#d99435"; ctx.fillRect(coin.x + 4, coin.y - 4, 4, 11);
   }
   for (const enemy of enemies) if (enemy.x > -50) {
-    ctx.shadowColor = "#ff3d8d"; ctx.shadowBlur = 16;
-    const enemyGradient = ctx.createLinearGradient(enemy.x, enemy.y, enemy.x, enemy.y + enemy.height);
-    enemyGradient.addColorStop(0, "#ff6cab"); enemyGradient.addColorStop(1, "#9e246d");
-    ctx.fillStyle = enemyGradient; ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-    ctx.shadowBlur = 0; ctx.fillStyle = "#251337";
-    ctx.fillRect(enemy.x + 6, enemy.y + 7, 5, 6); ctx.fillRect(enemy.x + 19, enemy.y + 7, 5, 6);
-    ctx.fillStyle = "#ffd0e5"; ctx.fillRect(enemy.x + 7, enemy.y + 8, 3, 2); ctx.fillRect(enemy.x + 20, enemy.y + 8, 3, 2);
+    ctx.fillStyle = "#d94b6a"; ctx.fillRect(enemy.x + 4, enemy.y + 8, 22, 20);
+    ctx.fillStyle = "#f27c61"; ctx.fillRect(enemy.x + 8, enemy.y + 3, 14, 8);
+    ctx.fillStyle = "#10152b"; ctx.fillRect(enemy.x + 8, enemy.y + 12, 5, 5); ctx.fillRect(enemy.x + 18, enemy.y + 12, 5, 5);
+    ctx.fillStyle = "#fff4c2"; ctx.fillRect(enemy.x + 9, enemy.y + 13, 3, 3); ctx.fillRect(enemy.x + 19, enemy.y + 13, 3, 3);
+    ctx.fillStyle = "#8b4b35"; ctx.fillRect(enemy.x, enemy.y + 28, 30, 4);
   }
-  ctx.shadowColor = "#ffd15c"; ctx.shadowBlur = 18;
-  ctx.fillStyle = "#ffd15c"; ctx.fillRect(3480, 300, 8, 170);
-  ctx.shadowBlur = 0; ctx.fillStyle = "#ff4fa3";
+  ctx.fillStyle = "#fff4c2"; ctx.fillRect(3480, 300, 8, 170);
+  ctx.fillStyle = "#d94b6a";
   ctx.beginPath(); ctx.moveTo(3488, 305); ctx.lineTo(3560, 330); ctx.lineTo(3488, 355); ctx.fill();
   drawPlayer();
+  drawParticles();
   ctx.restore();
 }
 
 function drawBackground() {
-  ctx.fillStyle = "#d9e7ff";
-  ctx.shadowColor = "#b7c9ff"; ctx.shadowBlur = 30;
-  ctx.beginPath(); ctx.arc(720, 105, 46, 0, Math.PI * 2); ctx.fill();
-  ctx.shadowBlur = 0; ctx.fillStyle = "#7280c8";
-  ctx.beginPath(); ctx.arc(742, 94, 46, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#151b4b";
+  ctx.fillStyle = "#ffd447";
+  ctx.fillRect(720, 70, 36, 36);
+  ctx.fillStyle = "#fff4c2";
+  ctx.fillRect(728, 78, 8, 8);
+  ctx.fillStyle = "#1c2857";
   for (let x = -100; x < WORLD_WIDTH; x += 260) {
-    const height = 90 + (x * 17 % 130);
-    ctx.fillRect(x, 470 - height, 170, height);
-    ctx.fillStyle = "#33418a";
-    for (let windowY = 490 - height; windowY < 460; windowY += 24) {
-      ctx.fillRect(x + 18, windowY, 5, 8); ctx.fillRect(x + 42, windowY, 5, 8);
-    }
-    ctx.fillStyle = "#151b4b";
+    const hillHeight = 75 + ((x * 17) % 80);
+    ctx.beginPath(); ctx.moveTo(x, 470); ctx.lineTo(x + 130, 470 - hillHeight); ctx.lineTo(x + 300, 470); ctx.fill();
   }
-  ctx.fillStyle = "#8ce8ff";
-  for (let x = 80; x < WORLD_WIDTH; x += 210) {
-    ctx.globalAlpha = 0.4 + ((x / 210) % 3) * 0.2;
-    ctx.beginPath(); ctx.arc(x, 80 + (x % 90), 2, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#62c370";
+  for (let x = 40; x < WORLD_WIDTH; x += 190) {
+    ctx.fillRect(x, 438, 8, 32); ctx.fillRect(x - 8, 430, 24, 8);
+    ctx.fillStyle = "#3d8f59"; ctx.fillRect(x - 13, 422, 34, 9); ctx.fillStyle = "#62c370";
+  }
+  ctx.fillStyle = "#fff4c2";
+  for (let x = 80; x < WORLD_WIDTH; x += 180) {
+    ctx.fillRect(x, 145 + (x % 80), 6, 6);
+    ctx.fillRect(x + 10, 145 + (x % 80), 6, 6);
+  }
+}
+
+function drawParticles() {
+  for (const particle of particles) {
+    ctx.globalAlpha = Math.max(0, particle.life / 34);
+    ctx.fillStyle = particle.color;
+    ctx.fillRect(Math.floor(particle.x), Math.floor(particle.y), 5, 5);
   }
   ctx.globalAlpha = 1;
 }
 
 function drawPlayer() {
-  const bob = player.grounded ? Math.sin(gameTime * 0.12) * 1.5 : 0;
-  const x = player.x;
-  const y = player.y + bob;
-  ctx.shadowColor = "#756dff"; ctx.shadowBlur = 20;
-  ctx.fillStyle = "#5d55db";
-  ctx.beginPath(); ctx.roundRect(x + 2, y + 7, player.width - 4, player.height - 6, 8); ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = "#a9a5ff";
-  ctx.beginPath(); ctx.arc(x + player.width / 2, y + 10, 13, Math.PI, 0); ctx.fill();
-  ctx.fillStyle = "#17204d";
-  ctx.fillRect(x + 5, y + 12, 20, 8);
-  ctx.fillStyle = "#bdfcff";
-  ctx.fillRect(x + 8, y + 14, 5, 3); ctx.fillRect(x + 18, y + 14, 5, 3);
-  ctx.fillStyle = "#ff6db1";
-  ctx.fillRect(x - 4, y + 20, 7, 13);
-  ctx.fillStyle = "#3633a0";
-  ctx.fillRect(x + 5, y + player.height - 4, 8, 7); ctx.fillRect(x + 18, y + player.height - 4, 8, 7);
+  const bob = player.grounded ? Math.floor(Math.sin(gameTime * 0.12) * 1.5) : 0;
+  const x = Math.floor(player.x);
+  const y = Math.floor(player.y + bob);
+  ctx.fillStyle = "#10152b";
+  ctx.fillRect(x + 3, y + 5, 24, 37);
+  ctx.fillStyle = "#4f8cff";
+  ctx.fillRect(x + 5, y + 7, 20, 27);
+  ctx.fillStyle = "#fff4c2";
+  ctx.fillRect(x + 8, y + 5, 14, 8);
+  ctx.fillStyle = "#273469";
+  ctx.fillRect(x + 8, y + 14, 14, 6);
+  ctx.fillStyle = "#ffd447";
+  ctx.fillRect(x + 10, y + 15, 3, 3); ctx.fillRect(x + 18, y + 15, 3, 3);
+  ctx.fillStyle = "#d94b6a";
+  ctx.fillRect(x, y + 23, 6, 10);
+  ctx.fillStyle = "#273469";
+  ctx.fillRect(x + 6, y + 34, 7, 8); ctx.fillRect(x + 18, y + 34, 7, 8);
 }
 
 function loop(time) {
