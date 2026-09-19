@@ -1,11 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Star Runner | 横スクロールアクション</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    ようこそ私のホームページへ！환영합니다!
+  <main class="game-shell">
+    <header class="game-header">
+      <div>
+        <p class="eyebrow">MINI ADVENTURE</p>
+        <h1>STAR RUNNER</h1>
+      </div>
+      <div class="instructions">← → / A D で移動　・　Space でジャンプ</div>
+    </header>
+
+    <section class="game-card" aria-label="Star Runner game">
+      <div class="hud">
+        <span>★ <strong id="score">0</strong></span>
+        <span>❤️ <strong id="lives">3</strong></span>
+        <span class="hud-message" id="message">ゴールを目指そう！</span>
+      </div>
+      <canvas id="gameCanvas" width="960" height="540">
+        お使いのブラウザはCanvasに対応していません。
+      </canvas>
+      <div class="game-overlay hidden" id="overlay">
+        <h2 id="overlayTitle">GAME OVER</h2>
+        <p id="overlayText">もう一度、星を集めよう。</p>
+        <button id="restartButton">リスタート</button>
+      </div>
+    </section>
+
+    <p class="tip">ヒント：敵はジャンプで踏むと倒せます。星を3つ集めて旗に触れよう。</p>
+  </main>
+  <script src="script.js"></script>
 </body>
 </html>
