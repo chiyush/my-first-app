@@ -39,7 +39,7 @@ function resetGame() {
     [2250, 420], [2420, 280], [2780, 360], [2960, 250], [3300, 420]]
     .map(([x, y]) => ({ x, y, size: 14, collected: false }));
   enemies = [[470, 428], [1350, 428], [1535, 298], [2290, 428], [2790, 368], [3210, 428]]
-    .map(([x, y]) => ({ x, y, width: 30, height: 30, vx: 1.2, startX: x }));
+    .map(([x, y]) => ({ x, y, width: 30, height: 30, vx: 0.7, startX: x }));
   overlay.classList.add("hidden");
   updateHud("ゴールを目指そう！");
 }
