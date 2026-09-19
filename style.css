@@ -14,7 +14,10 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at 75% 10%, #30235b 0, #10101f 42%, #080811 100%);
+  background:
+    radial-gradient(circle at 78% 8%, #3d2679 0, transparent 30%),
+    radial-gradient(circle at 12% 95%, #102e52 0, transparent 38%),
+    #070914;
   color: var(--ink);
   font-family: "Zen Kaku Gothic New", sans-serif;
 }
@@ -24,7 +27,7 @@ body {
 .eyebrow { color: var(--pink); font: 10px "Press Start 2P", monospace; letter-spacing: 2px; margin: 0 0 12px; }
 h1 { font: clamp(22px, 4vw, 38px) "Press Start 2P", monospace; line-height: 1.35; margin: 0; text-shadow: 4px 4px #463785; }
 .instructions, .tip { color: var(--muted); font-size: 14px; }
-.game-card { position: relative; overflow: hidden; border: 2px solid #413a72; border-radius: 14px; background: var(--panel); box-shadow: 0 18px 70px #0008; }
+.game-card { position: relative; overflow: hidden; border: 2px solid #5960b5; border-radius: 14px; background: var(--panel); box-shadow: 0 0 0 1px #ff5fa233, 0 18px 70px #000b, 0 0 45px #514bca55; }
 .hud { height: 52px; display: flex; align-items: center; gap: 22px; padding: 0 18px; background: #211d3c; font-size: 15px; }
 .hud strong { color: #ffe16b; font-size: 18px; }
 .hud-message { margin-left: auto; color: var(--muted); }
