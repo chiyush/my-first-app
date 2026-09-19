@@ -99,7 +99,7 @@ function loseLife() {
   if (state !== "playing") return;
   lives--;
   if (lives <= 0) {
-    state = "over"; showOverlay("GAME OVER", "星を集めて、もう一度挑戦しよう。"); return;
+    state = "over"; showOverlay("ゲームオーバー", "敵にぶつかってしまった！ もう一度挑戦しよう。"); return;
   }
   player.x = Math.max(40, player.x - 180); player.y = 250; player.vy = 0;
   updateHud("ぶつかった！ 残り " + lives + " ライフ");

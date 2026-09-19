@@ -34,7 +34,7 @@ h1 { font: clamp(22px, 4vw, 38px) "Press Start 2P", monospace; line-height: 1.35
 .hud-message { margin-left: auto; color: var(--muted); }
 canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; }
 .game-overlay { position: absolute; inset: 64px 0 0; display: grid; place-content: center; text-align: center; background: #0d0b1dcc; backdrop-filter: blur(3px); }
-.game-overlay h2 { color: #ffe16b; font: 24px "Press Start 2P", monospace; }
+.game-overlay h2 { color: #ffe16b; font: clamp(26px, 5vw, 48px) "Press Start 2P", monospace; letter-spacing: 2px; text-shadow: 0 0 20px #ff5fa2, 4px 4px #4b266e; }
 .game-overlay p { color: var(--muted); }
 button { border: 0; border-radius: 7px; padding: 13px 22px; color: white; background: linear-gradient(135deg, var(--purple), var(--pink)); font: 14px "Press Start 2P", monospace; cursor: pointer; }
 button:hover { filter: brightness(1.15); transform: translateY(-1px); }
