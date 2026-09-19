@@ -28,15 +28,16 @@ body {
 h1 { font: clamp(22px, 4vw, 38px) "Press Start 2P", monospace; line-height: 1.35; margin: 0; text-shadow: 4px 4px #463785; }
 .instructions, .tip { color: var(--muted); font-size: 14px; }
 .game-card { position: relative; overflow: hidden; border: 2px solid #5960b5; border-radius: 14px; background: var(--panel); box-shadow: 0 0 0 1px #ff5fa233, 0 18px 70px #000b, 0 0 45px #514bca55; }
-.hud { position: relative; height: 64px; display: flex; align-items: center; gap: 22px; padding: 0 18px; background: #211d3c; font-size: 15px; }
-.score-display { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 7px 20px; border: 1px solid #ffe16b99; border-radius: 999px; color: #ffe16b; background: #0f1029aa; box-shadow: 0 0 18px #ffe16b55; font: 15px "Press Start 2P", monospace; white-space: nowrap; }
+.hud { position: relative; height: 64px; display: flex; align-items: center; gap: 22px; padding: 0 18px; background: linear-gradient(90deg, #101a3b, #241640 50%, #101a3b); font-size: 12px; letter-spacing: 1px; }
+.score-display { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 8px 22px; border: 1px solid #27f5e6; border-radius: 4px; color: #27f5e6; background: #07152ccc; box-shadow: 0 0 18px #27f5e688, inset 0 0 12px #27f5e622; font: 15px "Press Start 2P", monospace; white-space: nowrap; }
+.energy-display { color: #c7ff4a; text-shadow: 0 0 10px #c7ff4a; }
 .hud strong { color: #ffe16b; font-size: 18px; }
 .hud-message { margin-left: auto; color: var(--muted); }
 canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; }
 .game-overlay { position: absolute; inset: 64px 0 0; display: grid; place-content: center; text-align: center; background: #0d0b1dcc; backdrop-filter: blur(3px); }
 .game-overlay h2 { color: #ffe16b; font: clamp(26px, 5vw, 48px) "Press Start 2P", monospace; letter-spacing: 2px; text-shadow: 0 0 20px #ff5fa2, 4px 4px #4b266e; }
 .game-overlay p { color: var(--muted); }
-button { border: 0; border-radius: 7px; padding: 13px 22px; color: white; background: linear-gradient(135deg, var(--purple), var(--pink)); font: 14px "Press Start 2P", monospace; cursor: pointer; }
+button { border: 1px solid #27f5e6; border-radius: 3px; padding: 13px 22px; color: #27f5e6; background: #101b3f; box-shadow: 0 0 18px #27f5e655, inset 0 0 14px #27f5e622; font: 14px "Press Start 2P", monospace; cursor: pointer; }
 button:hover { filter: brightness(1.15); transform: translateY(-1px); }
 .hidden { display: none; }
 .tip { margin: 14px 4px; }
@@ -46,5 +47,6 @@ button:hover { filter: brightness(1.15); transform: translateY(-1px); }
   .instructions { margin-top: 14px; font-size: 12px; }
   .hud { gap: 12px; font-size: 12px; }
   .score-display { padding: 6px 14px; font-size: 11px; }
+  .energy-display { font-size: 10px; }
   .hud-message { display: none; }
 }

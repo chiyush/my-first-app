@@ -23,6 +23,7 @@ let platforms;
 let coins;
 let enemies;
 let gameTime = 0;
+let particles;
 
 const levelPlatforms = [
   [0, 470, 700, 70], [820, 400, 260, 30], [1190, 470, 500, 70],
@@ -32,7 +33,7 @@ const levelPlatforms = [
 ];
 
 function resetGame() {
-  score = 0; lives = 3; cameraX = 0; gameTime = 0; state = "playing";
+  score = 0; lives = 3; cameraX = 0; gameTime = 0; state = "playing"; particles = [];
   player = { x: 90, y: 380, width: 30, height: 42, vx: 0, vy: 0, grounded: false };
   platforms = levelPlatforms.map(([x, y, width, height]) => ({ x, y, width, height }));
   coins = [[350, 420], [590, 300], [930, 350], [1330, 420], [1530, 290], [1900, 340],
@@ -41,7 +42,7 @@ function resetGame() {
   enemies = [[470, 428], [1350, 428], [1535, 298], [2290, 428], [2790, 368], [3210, 428]]
     .map(([x, y]) => ({ x, y, width: 30, height: 30, vx: 0.7, startX: x }));
   overlay.classList.add("hidden");
-  updateHud("ゴールを目指そう！");
+  updateHud("脱出ゲートを目指そう！");
 }
 
 function updateHud(message) {
@@ -77,7 +78,7 @@ function update(delta) {
   player.x = Math.max(0, Math.min(WORLD_WIDTH - player.width, player.x));
   for (const coin of coins) {
     if (!coin.collected && rectsOverlap(player, { x: coin.x - coin.size, y: coin.y - coin.size, width: coin.size * 2, height: coin.size * 2 })) {
-      coin.collected = true; score++; updateHud(`${score}個の星をゲット！`);
+      coin.collected = true; score++; burst(coin.x, coin.y, "#27f5e6", 10); updateHud(`${score} DATAを回収`);
     }
   }
   for (const enemy of enemies) {
@@ -85,11 +86,12 @@ function update(delta) {
     if (Math.abs(enemy.x - enemy.startX) > 55) enemy.vx *= -1;
     if (rectsOverlap(player, enemy)) {
       if (player.vy > 0 && player.y + player.height - enemy.y < 18) {
-        enemy.x = -100; player.vy = -9; score += 2; updateHud("敵を踏んだ！");
+        enemy.x = -100; player.vy = -9; score += 2; burst(enemy.x, enemy.y, "#ff2d9a", 20); updateHud("ドローンを無力化！");
       } else loseLife();
     }
   }
   if (player.y > HEIGHT + 100) loseLife();
+  updateParticles(delta);
   cameraX += (player.x - cameraX - WIDTH * 0.35) * 0.08;
   cameraX = Math.max(0, Math.min(WORLD_WIDTH - WIDTH, cameraX));
   if (player.x > 3480) finishGame();
@@ -99,7 +101,7 @@ function loseLife() {
   if (state !== "playing") return;
   lives--;
   if (lives <= 0) {
-    state = "over"; showOverlay("ゲームオーバー", "敵にぶつかってしまった！ もう一度挑戦しよう。"); return;
+    state = "over"; burst(player.x, player.y, "#ff416c", 28); showOverlay("SYSTEM FAILURE", "接触エラーが発生しました。再起動してください。"); return;
   }
   player.x = Math.max(40, player.x - 180); player.y = 250; player.vy = 0;
   updateHud("ぶつかった！ 残り " + lives + " ライフ");
@@ -107,7 +109,25 @@ function loseLife() {
 
 function finishGame() {
   state = "won";
-  showOverlay("STAGE CLEAR!", `集めた星：${score}　おめでとう！`);
+  burst(player.x, player.y, "#c7ff4a", 36);
+  showOverlay("ESCAPE SUCCESS", `回収データ：${score}　セクター脱出成功！`);
+}
+
+function burst(x, y, color, amount) {
+  for (let i = 0; i < amount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 4;
+    particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+      life: 18 + Math.random() * 20, maxLife: 38, color, size: 2 + Math.random() * 3 });
+  }
+}
+
+function updateParticles(delta) {
+  for (const particle of particles) {
+    particle.x += particle.vx * delta; particle.y += particle.vy * delta;
+    particle.vy += 0.08 * delta; particle.life -= delta;
+  }
+  particles = particles.filter((particle) => particle.life > 0);
 }
 
 function showOverlay(title, text) {
@@ -121,6 +141,7 @@ function draw() {
   ctx.fillStyle = sky; ctx.fillRect(0, 0, WIDTH, HEIGHT);
   ctx.save(); ctx.translate(-cameraX, 0);
   drawBackground();
+  drawGrid();
   for (const platform of platforms) {
     ctx.shadowColor = "#42f5d455"; ctx.shadowBlur = 14;
     const platformGradient = ctx.createLinearGradient(0, platform.y, 0, platform.y + platform.height);
@@ -150,6 +171,7 @@ function draw() {
   ctx.shadowBlur = 0; ctx.fillStyle = "#ff4fa3";
   ctx.beginPath(); ctx.moveTo(3488, 305); ctx.lineTo(3560, 330); ctx.lineTo(3488, 355); ctx.fill();
   drawPlayer();
+  drawParticles();
   ctx.restore();
 }
 
@@ -167,6 +189,10 @@ function drawBackground() {
     for (let windowY = 490 - height; windowY < 460; windowY += 24) {
       ctx.fillRect(x + 18, windowY, 5, 8); ctx.fillRect(x + 42, windowY, 5, 8);
     }
+    ctx.strokeStyle = "#ff2d9a55"; ctx.lineWidth = 2;
+    for (let x = 180; x < WORLD_WIDTH; x += 510) {
+      ctx.beginPath(); ctx.moveTo(x, 170); ctx.lineTo(x + 190, 230); ctx.lineTo(x + 300, 155); ctx.stroke();
+    }
     ctx.fillStyle = "#151b4b";
   }
   ctx.fillStyle = "#8ce8ff";
@@ -175,6 +201,25 @@ function drawBackground() {
     ctx.beginPath(); ctx.arc(x, 80 + (x % 90), 2, 0, Math.PI * 2); ctx.fill();
   }
   ctx.globalAlpha = 1;
+}
+
+function drawGrid() {
+  ctx.strokeStyle = "#27f5e61f"; ctx.lineWidth = 1;
+  for (let x = -100; x < WORLD_WIDTH; x += 60) {
+    ctx.beginPath(); ctx.moveTo(x, 470); ctx.lineTo(x + 90, HEIGHT); ctx.stroke();
+  }
+  for (let y = 480; y < HEIGHT; y += 18) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(WORLD_WIDTH, y); ctx.stroke();
+  }
+}
+
+function drawParticles() {
+  for (const particle of particles) {
+    ctx.globalAlpha = Math.max(0, particle.life / particle.maxLife);
+    ctx.shadowColor = particle.color; ctx.shadowBlur = 12;
+    ctx.fillStyle = particle.color; ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+  }
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0;
 }
 
 function drawPlayer() {
